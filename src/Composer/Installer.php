@@ -108,6 +108,7 @@ class Installer
     protected $dumpAutoloader = true;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
+    protected $installExtensions = false;
     protected $preferStable = false;
     protected $preferLowest = false;
     /**
@@ -494,7 +495,7 @@ class Installer
                 $links = $this->package->getRequires();
             }
 
-            foreach ($links as $link) {
+            foreach ($links as $link) {             
                 $request->install($link->getTarget(), $link->getConstraint());
             }
         }
@@ -505,6 +506,7 @@ class Installer
         // solve dependencies
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request);
         $solver = new Solver($policy, $pool, $installedRepo);
+
         try {
             $operations = $solver->solve($request, $this->ignorePlatformReqs);
             $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, $this->devMode, $policy, $pool, $installedRepo, $request, $operations);
@@ -529,6 +531,10 @@ class Installer
         foreach ($operations as $operation) {
             // collect suggestions
             if ('install' === $operation->getJobType()) {
+                if (!$this->installExtensions && $operation->getPackage()->getType() ==  'extension') {
+                    $this->io->writeError('<warning>This package has extensions dependencies, run composer install --install-extensons</warning>');
+                    continue;
+                }
                 foreach ($operation->getPackage()->getSuggests() as $target => $reason) {
                     $this->suggestedPackages[] = array(
                         'source' => $operation->getPackage()->getPrettyName(),
@@ -1255,6 +1261,19 @@ class Installer
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
     {
         $this->ignorePlatformReqs = (boolean) $ignorePlatformReqs;
+
+        return $this;
+    }
+
+    /**
+     * set install Extensions flag
+     *
+     * @param  boolean   $installExtensions
+     * @return Installer
+     */
+    public function setInstallExtensions($installExtensions = false)
+    {
+        $this->installExtensions = (boolean) $installExtensions;
 
         return $this;
     }
