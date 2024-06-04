@@ -756,7 +756,7 @@ class Installer
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
 
-            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes);
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, AuditConfig::fromConfig($this->config)->blockInstall ? $this->createSecurityAuditPoolFilter() : null);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io);
@@ -1089,9 +1089,15 @@ class Installer
         return new PoolOptimizer($policy);
     }
 
-    private function createSecurityAuditPoolFilter(): SecurityAdvisoryPoolFilter
+    private function createSecurityAuditPoolFilter(): ?SecurityAdvisoryPoolFilter
     {
-        return new SecurityAdvisoryPoolFilter(new Auditor(), AuditConfig::fromConfig($this->config));
+        $auditConfig = AuditConfig::fromConfig($this->config);
+
+        if ($auditConfig->blockInsecure || $auditConfig->blockAbandoned) {
+            return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        }
+
+        return null;
     }
 
     /**

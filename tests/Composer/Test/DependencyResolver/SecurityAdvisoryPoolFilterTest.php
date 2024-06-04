@@ -14,7 +14,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 {
     public function testFilterPackagesByAdvisories(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL);
+        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, true);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -35,7 +35,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesByIgnoredAdvisories(): void
     {
-        $auditConfig = new AuditConfig(['CVE-2024-1234'], Auditor::ABANDONED_FAIL);
+        $auditConfig = new AuditConfig(['CVE-2024-1234'], Auditor::ABANDONED_FAIL, true, true, true);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([

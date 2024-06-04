@@ -16,6 +16,7 @@ use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryInterface;
@@ -42,26 +43,34 @@ class SecurityAdvisoryPoolFilter
      */
     public function filter(Pool $pool, array $repositories): Pool
     {
-        $repoSet = new RepositorySet();
-        foreach ($repositories as $repo) {
-            $repoSet->addRepository($repo);
-        }
-
-        $packagesForAdvisories = [];
-        foreach ($pool->getPackages() as $package) {
-            // @todo Pool contains a list of ext-/lib-/php/composer/composer-plugin-api/composer-runtime-api that need to be filtered out before fetching security advisories. Is there a better way?
-            if (! $package instanceof RootPackageInterface && str_contains($package->getName(), '/')) {
-                $packagesForAdvisories[] = $package;
+        $advisoryMap = [];
+        if ($this->auditConfig->blockInsecure) {
+            $repoSet = new RepositorySet();
+            foreach ($repositories as $repo) {
+                $repoSet->addRepository($repo);
             }
-        }
 
-        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
-        $advisoryMap = $this->auditor->processAdvisories($allAdvisories, $this->auditConfig->ignoreList)['advisories'];
+            $packagesForAdvisories = [];
+            foreach ($pool->getPackages() as $package) {
+                // @todo Pool contains a list of ext-/lib-/php/composer/composer-plugin-api/composer-runtime-api that need to be filtered out before fetching security advisories. Is there a better way?
+                if (! $package instanceof RootPackageInterface && str_contains($package->getName(), '/')) {
+                    $packagesForAdvisories[] = $package;
+                }
+            }
+
+            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
+            $advisoryMap = $this->auditor->processAdvisories($allAdvisories, $this->auditConfig->ignoreList)['advisories'];
+        }
 
         $packages = [];
         $securityRemovedVersions = [];
+        $abandonedRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            if ($this->doesPackageMatchAdvisories($package, $advisoryMap)) {
+            if ($this->auditConfig->blockAbandoned && $package instanceof CompletePackage && $package->isAbandoned()) {
+                foreach ($package->getNames(false) as $packageName) {
+                    $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
+                }
+            } elseif ($this->doesPackageMatchAdvisories($package, $advisoryMap)) {
                 foreach ($package->getNames(false) as $packageName) {
                     $securityRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
                 }
@@ -70,7 +79,7 @@ class SecurityAdvisoryPoolFilter
             }
         }
 
-        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), [], [], $securityRemovedVersions);
+        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), [], [], $securityRemovedVersions, $abandonedRemovedVersions);
     }
 
     /**

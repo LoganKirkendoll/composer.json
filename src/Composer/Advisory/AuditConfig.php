@@ -14,6 +14,9 @@ namespace Composer\Advisory;
 
 use Composer\Config;
 
+/**
+ * @readonly
+ */
 class AuditConfig
 {
     /**
@@ -27,13 +30,31 @@ class AuditConfig
     public $abandoned;
 
     /**
+     * @var bool Should insecure versions be blocked during a composer update/required command
+     */
+    public $blockInsecure;
+
+    /**
+     * @var bool Should abandoned packages be blocked during a composer update/required command
+     */
+    public $blockAbandoned;
+
+    /**
+     * @var bool Should blocking flags also block a composer install command
+     */
+    public $blockInstall;
+
+    /**
      * @param array<string>|array<string,string> $ignoreList
      * @param Auditor::ABANDONED_* $abandoned
     */
-    public function __construct(array $ignoreList, string $abandoned)
+    public function __construct(array $ignoreList, string $abandoned, bool $blockInsecure, bool $blockAbandoned, bool $blockInstall)
     {
         $this->ignoreList = $ignoreList;
         $this->abandoned = $abandoned;
+        $this->blockInsecure = $blockInsecure;
+        $this->blockAbandoned = $blockAbandoned;
+        $this->blockInstall = $blockInstall;
     }
 
     public static function fromConfig(Config $config): self
@@ -42,7 +63,10 @@ class AuditConfig
 
         return new self(
             $auditConfig['ignore'] ?? [],
-                $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL
+                $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL,
+                (bool) ($auditConfig['block-insecure'] ?? false),
+                (bool) ($auditConfig['block-abandoned'] ?? false),
+                (bool) ($auditConfig['block-install'] ?? false)
         );
     }
 }
