@@ -131,11 +131,6 @@ parameters:
 			path: ../src/Composer/Autoload/ClassLoader.php
 
 		-
-			message: "#^Casting to bool something that's already bool\\.$#"
-			count: 2
-			path: ../src/Composer/Cache.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, int\\<0, 50\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Cache.php
@@ -973,11 +968,6 @@ parameters:
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 2
-			path: ../src/Composer/Config.php
-
-		-
-			message: "#^Casting to bool something that's already bool\\.$#"
-			count: 1
 			path: ../src/Composer/Config.php
 
 		-
@@ -1861,11 +1851,6 @@ parameters:
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
-			message: "#^Casting to bool something that's already bool\\.$#"
-			count: 1
-			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
@@ -2063,11 +2048,6 @@ parameters:
 		-
 			message: "#^Cannot call method getPackages\\(\\) on Composer\\\\Repository\\\\RepositoryInterface\\|null\\.$#"
 			count: 1
-			path: ../src/Composer/Installer.php
-
-		-
-			message: "#^Casting to bool something that's already bool\\.$#"
-			count: 11
 			path: ../src/Composer/Installer.php
 
 		-
@@ -2929,11 +2909,6 @@ parameters:
 			message: "#^Property Composer\\\\Plugin\\\\PostFileDownloadEvent\\:\\:\\$fileName \\(string\\) does not accept string\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Plugin/PostFileDownloadEvent.php
-
-		-
-			message: "#^Casting to bool something that's already bool\\.$#"
-			count: 1
-			path: ../src/Composer/Question/StrictConfirmationQuestion.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -4459,6 +4434,16 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
+			message: "#^Function http_clear_last_response_headers not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/RemoteFilesystem.php
+
+		-
+			message: "#^Function http_get_last_response_headers not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/RemoteFilesystem.php
+
+		-
 			message: "#^Method Composer\\\\Util\\\\RemoteFilesystem\\:\\:copy\\(\\) should return bool but returns bool\\|string\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
@@ -5220,4 +5205,3 @@ parameters:
 			message: "#^Only booleans are allowed in a ternary operator condition, array\\<string\\> given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/TlsHelperTest.php
-
